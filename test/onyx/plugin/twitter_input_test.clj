@@ -10,7 +10,7 @@
             [onyx.plugin.twitter]
             [onyx.tasks
              [core-async :as async-task]
-             [twitter :as t]]))
+             [twitter :as twitter]]))
 
 (defn build-job [twitter-config batch-size batch-timeout]
   (let [batch-settings {:onyx/batch-size batch-size :onyx/batch-timeout batch-timeout}
@@ -22,7 +22,7 @@
                          :flow-conditions []
                          :task-scheduler :onyx.task-scheduler/balanced})]
     (-> base-job
-        (add-task (t/input-task :in (merge twitter-config batch-settings)))
+        (add-task (twitter/stream :in (merge twitter-config batch-settings)))
         (add-task (async-task/output :out batch-settings)))))
 
 (deftest get-tweet-test
