@@ -12,6 +12,7 @@
                              :password :env
                              :sign-releases false}}
   :dependencies [[org.clojure/clojure "1.7.0"]
+                 ^{:voom {:repo "git@github.com:onyx-platform/onyx.git" :branch "master"}}
                  [org.onyxplatform/onyx "0.9.0-SNAPSHOT"]
                  [org.twitter4j/twitter4j-core "4.0.4"]
                  [org.twitter4j/twitter4j-stream "4.0.4"]
@@ -19,4 +20,7 @@
                  [aero "0.2.0"]
                  [metosin/schema-tools "0.7.0"]]
   :profiles {:dev {:dependencies []
-                   :plugins []}})
+                   :plugins [[lein-set-version "0.4.1"]
+                             [lein-update-dependency "0.1.2"]
+                             [lein-pprint "1.1.1"]]}
+             :circle-ci {:jvm-opts ["-Xmx4g"]}})
