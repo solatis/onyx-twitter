@@ -1,13 +1,13 @@
 ## onyx-twitter
 
-Onyx plugin for twitter.
+Onyx plugin for twitter. **docs incomming**
 
 #### Installation
 
 In your project file:
 
 ```clojure
-[onyx-twitter "0.8.0.0"]
+[onyx-twitter "0.9.0.0"]
 ```
 
 In your peer boot-up namespace:
@@ -17,32 +17,6 @@ In your peer boot-up namespace:
 ```
 
 #### Functions
-
-##### sample-entry
-
-Catalog entry:
-
-```clojure
-{:onyx/name :entry-name
- :onyx/plugin :onyx.plugin.twitter/input
- :onyx/type :input
- :onyx/medium :twitter
- :onyx/batch-size batch-size
- :onyx/doc "Reads segments from twitter"}
-```
-
-Lifecycle entry:
-
-```clojure
-[{:lifecycle/task :your-task-name
-  :lifecycle/calls :onyx.plugin.twitter/lifecycle-calls}]
-```
-
-#### Attributes
-
-|key                           | type      | description
-|------------------------------|-----------|------------
-|`:twitter/attr`            | `string`  | Description here.
 
 #### Contributing
 
