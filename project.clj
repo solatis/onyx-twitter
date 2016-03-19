@@ -1,4 +1,4 @@
-(defproject onyx-twitter "0.9.0.0-SNAPSHOT"
+(defproject org.onyxplatform/onyx-twitter "0.9.0.0-beta2"
   :description "Onyx plugin for twitter"
   :url "FIX ME"
   :license {:name "Eclipse Public License"
@@ -13,7 +13,7 @@
                              :sign-releases false}}
   :dependencies [[org.clojure/clojure "1.7.0"]
                  ^{:voom {:repo "git@github.com:onyx-platform/onyx.git" :branch "master"}}
-                 [org.onyxplatform/onyx "0.9.0-SNAPSHOT"]
+                 [org.onyxplatform/onyx "0.9.0-beta2"]
                  [org.twitter4j/twitter4j-core "4.0.4"]
                  [org.twitter4j/twitter4j-stream "4.0.4"]
                  [org.clojure/core.async "0.2.374"]
