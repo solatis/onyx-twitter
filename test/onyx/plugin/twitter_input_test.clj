@@ -29,9 +29,10 @@
   (testing "We can get tweets"
     (let [{:keys [env-config peer-config twitter-config]}
           (read-config (io/resource "config.edn") {:profile :test})
-          job (build-job twitter-config 10 1000)
+          job (build-job twitter-config 2 1000)
           {:keys [out]} (core-async/get-core-async-channels job)]
-      (with-test-env [test-env [2 env-config peer-config]]
+      (with-test-env [test-env [6 env-config peer-config]]
         (validate-enough-peers! test-env job)
         (onyx.api/submit-job peer-config job)
+        (clojure.pprint/pprint (<!! out))
         (is (<!! out))))))

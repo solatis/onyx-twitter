@@ -2,7 +2,7 @@
   (:require [clojure.core.async :refer [<!! >!! chan close!]]
             [onyx.plugin simple-input
              [buffered-reader :as buffered-reader]])
-  (:import [twitter4j Status StatusListener TwitterStream TwitterStreamFactory]
+  (:import [twitter4j Status StatusListener TwitterStream TwitterStreamFactory StatusJSONImpl]
            [twitter4j.conf Configuration ConfigurationBuilder]))
 
 (defn config-with-password ^Configuration [consumer-key consumer-secret
@@ -34,14 +34,33 @@
     (.addListener stream (status-listener cb))
     (.sample stream)))
 
-(defn tweetobj->map [tweet-obj]
-  (try {:created-at (.getCreatedAt tweet-obj)
-        :id (.getId tweet-obj)
-        :in-reply-to-screen-name (.getInReplyToScreenName tweet-obj)
-        :in-reply-to-status-id (.getInReplyToStatusId tweet-obj)
-        :in-reply-to-user-id (.getInReplyToUserId tweet-obj)
-        :source (.getSource tweet-obj)
-        :text (.getText tweet-obj)}
+(defmacro safeget [f obj]
+  `(try (~f ~obj) (catch NullPointerException e# nil)))
+
+(defn tweetobj->map [^StatusJSONImpl tweet-obj]
+  (try {:contributors (let [x (safeget .getContributors tweet-obj)]
+                        (vec x))
+        :created-at (safeget .getCreatedAt tweet-obj)
+        :geolocation (let [x (safeget .getGeoLocation tweet-obj)]
+                       {:latitude (safeget .getLatitude x)
+                        :longitude (safeget .getLongitude x)})
+        :id (safeget .getId tweet-obj)
+        :in-reply-to-screen-name (safeget .getInReplyToScreenName tweet-obj)
+        :in-reply-to-status-id (safeget .getInReplyToStatusId tweet-obj)
+        :in-reply-to-user-id (safeget .getInReplyToUserId tweet-obj)
+        :retweet-count (safeget .getRetweetCount tweet-obj)
+        :text (safeget .getText tweet-obj)
+        :user (let [x (safeget .getUser tweet-obj)]
+                {:created-at (safeget .getCreatedAt x)
+                 :description (safeget .getDescription x)
+                 :favourites-count (safeget .getFavouritesCount x)
+                 :followers-count (safeget .getFollowersCount x)
+                 :friends-count (safeget .getFriendsCount x)
+                 :id (safeget .getId x)
+                 :location (safeget .getLocation x)
+                 :name (safeget .getName x)
+                 :screen-name (safeget .getScreenName x)
+                 :geo-enabled? (safeget .isGeoEnabled x)})}
        (catch Exception e
          {:error e})))
 

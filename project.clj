@@ -17,6 +17,7 @@
                  [org.twitter4j/twitter4j-core "4.0.4"]
                  [org.twitter4j/twitter4j-stream "4.0.4"]
                  [org.clojure/core.async "0.2.374"]
+                 [cheshire "5.5.0"]
                  [aero "0.2.0"]
                  [metosin/schema-tools "0.7.0"]]
   :profiles {:dev {:dependencies []
