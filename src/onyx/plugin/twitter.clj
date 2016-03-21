@@ -41,7 +41,7 @@
   (try {:contributors (let [x (safeget .getContributors tweet-obj)]
                         (vec x))
         :created-at (safeget .getCreatedAt tweet-obj)
-        :geolocation (let [x (safeget .getGeoLocation tweet-obj)]
+        :geolocation (when-let [x (safeget .getGeoLocation tweet-obj)]
                        {:latitude (safeget .getLatitude x)
                         :longitude (safeget .getLongitude x)})
         :id (safeget .getId tweet-obj)
@@ -50,7 +50,10 @@
         :in-reply-to-user-id (safeget .getInReplyToUserId tweet-obj)
         :retweet-count (safeget .getRetweetCount tweet-obj)
         :text (safeget .getText tweet-obj)
-        :user (let [x (safeget .getUser tweet-obj)]
+        :place (when-let [x (.getPlace tweet-obj)]
+                 {:country (safeget .getCountry x)
+                  :country-code (safeget .getCountryCode x)})
+        :user (when-let [x (safeget .getUser tweet-obj)]
                 {:created-at (safeget .getCreatedAt x)
                  :description (safeget .getDescription x)
                  :favourites-count (safeget .getFavouritesCount x)
