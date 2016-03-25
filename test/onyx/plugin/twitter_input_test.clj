@@ -14,13 +14,13 @@
 
 (defn build-job [twitter-config batch-size batch-timeout]
   (let [batch-settings {:onyx/batch-size batch-size :onyx/batch-timeout batch-timeout}
-        base-job (merge {:workflow [[:in :out]]
-                         :catalog []
-                         :lifecycles []
-                         :windows []
-                         :triggers []
-                         :flow-conditions []
-                         :task-scheduler :onyx.task-scheduler/balanced})]
+        base-job {:workflow [[:in :out]]
+                  :catalog []
+                  :lifecycles []
+                  :windows []
+                  :triggers []
+                  :flow-conditions []
+                  :task-scheduler :onyx.task-scheduler/balanced}]
     (-> base-job
         (add-task (twitter/stream :in (merge twitter-config batch-settings)))
         (add-task (async-task/output :out batch-settings)))))
