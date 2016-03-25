@@ -35,4 +35,5 @@
    (stream task-name (merge {:twitter/consumer-key consumer-key
                              :twitter/consumer-secret consumer-secret
                              :twitter/access-token access-token
-                             :twitter/access-secret access-secret}))))
+                             :twitter/access-secret access-secret}
+                            task-opts))))
