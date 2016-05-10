@@ -1,31 +1,31 @@
 {:env-config
- {:onyx/tenancy-id #env [ONYX_ID "testcluster"]
+ {:onyx/tenancy-id #or [#env ONYX_ID "testcluster"]
   :onyx.bookkeeper/server? true
-  :onyx.bookkeeper/local-quorum? #cond {:default false
+  :onyx.bookkeeper/local-quorum? #profile {:default false
                                         :test true}
   :onyx.bookkeeper/delete-server-data? true
   :onyx.bookkeeper/local-quorum-ports [3196 3197 3198]
   :onyx.bookkeeper/port 3196
-  :zookeeper/address #cond {:default #env [ZOOKEEPER "zookeeper"]
+  :zookeeper/address #profile {:default #or [#env ZOOKEEPER "zookeeper"]
                             :test "127.0.0.1:2188"}
-  :zookeeper/server? #cond {:default false
+  :zookeeper/server? #profile {:default false
                             :test true}
   :zookeeper.server/port 2188}
  :peer-config
- {:onyx/tenancy-id                       #env [ONYX_ID "testcluster"]
-  :zookeeper/address                     #cond {:default #env [ZOOKEEPER "zookeeper"]
+ {:onyx/tenancy-id                       #or [#env ONYX_ID "testcluster"]
+  :zookeeper/address                     #profile {:default #or [#env ZOOKEEPER "zookeeper"]
                                                 :test "127.0.0.1:2188"}
   :onyx.peer/job-scheduler               :onyx.job-scheduler/greedy
   :onyx.peer/zookeeper-timeout           60000
-  :onyx.messaging/allow-short-circuit?   #cond {:default true
+  :onyx.messaging/allow-short-circuit?   #profile {:default true
                                                 :test false}
   :onyx.messaging/impl                   :aeron
-  :onyx.messaging/bind-addr              #env [BIND_ADDR "localhost"]
+  :onyx.messaging/bind-addr              #or [#env BIND_ADDR "localhost"]
   :onyx.messaging/peer-port              40200
-  :onyx.messaging.aeron/embedded-driver? #cond {:default false
+  :onyx.messaging.aeron/embedded-driver? #profile {:default false
                                                 :test true}}
  :twitter-config
- {:twitter/consumer-key #env [TWITTER_CONSUMER_KEY]
-  :twitter/consumer-secret #env [TWITTER_CONSUMER_SECRET]
-  :twitter/access-token #env [TWITTER_ACCESS_TOKEN]
-  :twitter/access-secret #env [TWITTER_ACCESS_SECRET]}}
+ {:twitter/consumer-key #or [#env TWITTER_CONSUMER_KEY]
+  :twitter/consumer-secret #or [#env TWITTER_CONSUMER_SECRET]
+  :twitter/access-token #or [#env TWITTER_ACCESS_TOKEN]
+  :twitter/access-secret #or [#env TWITTER_ACCESS_SECRET]}}

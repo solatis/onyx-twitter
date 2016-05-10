@@ -2,16 +2,12 @@
   (:require [schema.core :as s]
             [onyx.schema :as os]))
 
-(def UserTaskMapKey
-  (os/build-allowed-key-ns :twitter))
-
 (def TwitterStreamTaskMap
-  (s/->Both [os/TaskMap
-             {:twitter/consumer-key s/Str
-              :twitter/consumer-secret s/Str
-              :twitter/access-token s/Str
-              :twitter/access-secret s/Str
-              UserTaskMapKey s/Any}]))
+  {:twitter/consumer-key s/Str
+   :twitter/consumer-secret s/Str
+   :twitter/access-token s/Str
+   :twitter/access-secret s/Str
+   (os/restricted-ns :twitter) s/Any})
 
 (s/defn stream
   ([task-name :- s/Keyword opts]
@@ -24,8 +20,7 @@
                       opts)
            :lifecycles [{:lifecycle/task task-name
                          :lifecycle/calls :onyx.plugin.twitter/twitter-reader-calls}]}
-    :schema {:task-map TwitterStreamTaskMap
-             :lifecycles [os/Lifecycle]}})
+    :schema {:task-map TwitterStreamTaskMap}})
   ([task-name :- s/Keyword
     consumer-key :- s/Str
     consumer-secret :- s/Str
