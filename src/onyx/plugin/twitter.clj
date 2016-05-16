@@ -1,5 +1,6 @@
 (ns onyx.plugin.twitter
   (:require [clojure.core.async :refer [<!! >!! chan close!]]
+            [clojure.java.data :refer [from-java]]
             [onyx.plugin simple-input
              [buffered-reader :as buffered-reader]])
   (:import [twitter4j Status StatusListener TwitterStream TwitterStreamFactory StatusJSONImpl]
@@ -38,32 +39,7 @@
   `(try (~f ~obj) (catch NullPointerException e# nil)))
 
 (defn tweetobj->map [^StatusJSONImpl tweet-obj]
-  (try {:contributors (let [x (safeget .getContributors tweet-obj)]
-                        (vec x))
-        :created-at (safeget .getCreatedAt tweet-obj)
-        :geolocation (when-let [x (safeget .getGeoLocation tweet-obj)]
-                       {:latitude (safeget .getLatitude x)
-                        :longitude (safeget .getLongitude x)})
-        :id (safeget .getId tweet-obj)
-        :in-reply-to-screen-name (safeget .getInReplyToScreenName tweet-obj)
-        :in-reply-to-status-id (safeget .getInReplyToStatusId tweet-obj)
-        :in-reply-to-user-id (safeget .getInReplyToUserId tweet-obj)
-        :retweet-count (safeget .getRetweetCount tweet-obj)
-        :text (safeget .getText tweet-obj)
-        :place (when-let [x (.getPlace tweet-obj)]
-                 {:country (safeget .getCountry x)
-                  :country-code (safeget .getCountryCode x)})
-        :user (when-let [x (safeget .getUser tweet-obj)]
-                {:created-at (safeget .getCreatedAt x)
-                 :description (safeget .getDescription x)
-                 :favourites-count (safeget .getFavouritesCount x)
-                 :followers-count (safeget .getFollowersCount x)
-                 :friends-count (safeget .getFriendsCount x)
-                 :id (safeget .getId x)
-                 :location (safeget .getLocation x)
-                 :name (safeget .getName x)
-                 :screen-name (safeget .getScreenName x)
-                 :geo-enabled? (safeget .isGeoEnabled x)})}
+  (try (from-java tweet-obj)
        (catch Exception e
          {:error e})))
 
@@ -73,7 +49,8 @@
     (let [{:keys [twitter/consumer-key
                   twitter/consumer-secret
                   twitter/access-token
-                  twitter/access-secret]} (:task-map this)
+                  twitter/access-secret
+                  twitter/keep-keys]} (:task-map this)
           configuration (config-with-password consumer-key consumer-secret
                                               access-token access-secret)
           twitter-stream (get-twitter-stream configuration)
@@ -92,8 +69,11 @@
     -1)
   (segment [this]
     segment)
-  (next-state [{:keys [twitter-feed-ch] :as this}]
-    (assoc this :segment {:tweet (tweetobj->map (<!! twitter-feed-ch))}))
+  (next-state [{:keys [twitter-feed-ch task-map] :as this}]
+    (let [keep-keys (get task-map :twitter/keep-keys)]
+      (assoc this :segment (select-keys
+                            (tweetobj->map (<!! twitter-feed-ch))
+                            (or keep-keys [:id :text :lang])))))
   (recover [this offset]
     this)
   (checkpoint-ack [this offset]

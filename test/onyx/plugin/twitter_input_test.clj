@@ -3,6 +3,8 @@
             [clojure.core.async :refer [<!!]]
             [clojure.java.io :as io]
             [clojure.test :refer [deftest is testing]]
+            [schema.core :as s]
+            [table.core :refer [table]]
             [onyx api
              [job :refer [add-task]]
              [test-helper :refer [validate-enough-peers! with-test-env]]]
@@ -13,7 +15,8 @@
              [twitter :as twitter]]))
 
 (defn build-job [twitter-config batch-size batch-timeout]
-  (let [batch-settings {:onyx/batch-size batch-size :onyx/batch-timeout batch-timeout}
+  (let [batch-settings {:onyx/batch-size batch-size
+                        :onyx/batch-timeout batch-timeout}
         base-job {:workflow [[:in :out]]
                   :catalog []
                   :lifecycles []
@@ -22,7 +25,8 @@
                   :flow-conditions []
                   :task-scheduler :onyx.task-scheduler/balanced}]
     (-> base-job
-        (add-task (twitter/stream :in (merge twitter-config batch-settings)))
+        (add-task (twitter/stream :in
+                                  (merge twitter-config batch-settings)))
         (add-task (async-task/output :out batch-settings)))))
 
 (deftest get-tweet-test
@@ -34,5 +38,5 @@
       (with-test-env [test-env [6 env-config peer-config]]
         (validate-enough-peers! test-env job)
         (onyx.api/submit-job peer-config job)
-        (clojure.pprint/pprint (<!! out))
+        (println (<!! out))
         (is (<!! out))))))

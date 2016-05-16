@@ -16,7 +16,17 @@ In your peer boot-up namespace:
 (:require [onyx.plugin.twitter])
 ```
 
-#### Functions
+#### Task Bundle
+
+`onyx.tasks.twitter/stream`
+
+| key                          | value               | description  |
+|----------------------------- | --------------------|--------------|
+| :twitter/consumer-key        | String              | API key      |
+| :twitter/consumer-secret     | String              | API key      |
+| :twitter/access-token        | String              | API key      |
+| :twitter/access-secret       | String              | API key      |
+| :twitter/keep-keys           | [Any]               | Keys to keep in the tweet map after deconstructing the POJO tweet. Defaults to [:id :lang :text]|
 
 #### Contributing
 

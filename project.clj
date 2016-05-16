@@ -18,7 +18,7 @@
                  [org.twitter4j/twitter4j-stream "4.0.4"]
                  [org.clojure/core.async "0.2.374"]
                  [aero "1.0.0-beta2"]
-                 [metosin/schema-tools "0.7.0"]]
+                 [org.clojure/java.data "0.1.1"]]
   :profiles {:dev {:dependencies []
                    :plugins [[lein-set-version "0.4.1"]
                              [lein-update-dependency "0.1.2"]

@@ -7,6 +7,7 @@
    :twitter/consumer-secret s/Str
    :twitter/access-token s/Str
    :twitter/access-secret s/Str
+   (s/optional-key :twitter/keep-keys) [s/Any]
    (os/restricted-ns :twitter) s/Any})
 
 (s/defn stream
@@ -22,13 +23,7 @@
                          :lifecycle/calls :onyx.plugin.twitter/twitter-reader-calls}]}
     :schema {:task-map TwitterStreamTaskMap}})
   ([task-name :- s/Keyword
-    consumer-key :- s/Str
-    consumer-secret :- s/Str
-    access-token :- s/Str
-    access-secret :- s/Str
+    keep-keys :- [s/Any]
     task-opts :- {s/Any s/Any}]
-   (stream task-name (merge {:twitter/consumer-key consumer-key
-                             :twitter/consumer-secret consumer-secret
-                             :twitter/access-token access-token
-                             :twitter/access-secret access-secret}
+   (stream task-name (merge {:twitter/keep-keys keep-keys}
                             task-opts))))
