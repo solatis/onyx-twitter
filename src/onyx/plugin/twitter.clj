@@ -71,9 +71,11 @@
     segment)
   (next-state [{:keys [twitter-feed-ch task-map] :as this}]
     (let [keep-keys (get task-map :twitter/keep-keys)]
-      (assoc this :segment (select-keys
-                            (tweetobj->map (<!! twitter-feed-ch))
-                            (or keep-keys [:id :text :lang])))))
+      (assoc this :segment (if (= :all keep-keys)
+                             (tweetobj->map (<!! twitter-feed-ch))
+                             (select-keys
+                              (tweetobj->map (<!! twitter-feed-ch))
+                              (or keep-keys [:id :text :lang]))))))
   (recover [this offset]
     this)
   (checkpoint-ack [this offset]

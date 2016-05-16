@@ -24,7 +24,7 @@
                   :flow-conditions []
                   :task-scheduler :onyx.task-scheduler/balanced}]
     (-> base-job
-        (add-task (twitter/stream :in
+        (add-task (twitter/stream :in :all
                                   (merge twitter-config batch-settings)))
         (add-task (async-task/output :out batch-settings)))))
 

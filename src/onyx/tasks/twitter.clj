@@ -7,7 +7,7 @@
    :twitter/consumer-secret s/Str
    :twitter/access-token s/Str
    :twitter/access-secret s/Str
-   (s/optional-key :twitter/keep-keys) [s/Any]
+   (s/optional-key :twitter/keep-keys) (s/either s/Keyword [s/Any])
    (os/restricted-ns :twitter) s/Any})
 
 (s/defn stream
