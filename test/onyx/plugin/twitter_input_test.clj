@@ -3,13 +3,12 @@
             [clojure.core.async :refer [<!!]]
             [clojure.java.io :as io]
             [clojure.test :refer [deftest is testing]]
-            [schema.core :as s]
-            [table.core :refer [table]]
             [onyx api
              [job :refer [add-task]]
              [test-helper :refer [validate-enough-peers! with-test-env]]]
-            [onyx.plugin.core-async :as core-async]
-            [onyx.plugin.twitter]
+            [onyx.plugin
+             [core-async :as core-async]
+             [twitter]]
             [onyx.tasks
              [core-async :as async-task]
              [twitter :as twitter]]))
