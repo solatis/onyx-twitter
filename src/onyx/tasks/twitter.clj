@@ -17,6 +17,7 @@
                        :onyx/plugin :onyx.plugin.buffered-reader/new-buffered-input
                        :simple-input/build-input :onyx.plugin.twitter/consume-tweets
                        :onyx/type :input
+                       :onyx/max-peers 1
                        :onyx/medium :twitter}
                       opts)
            :lifecycles [{:lifecycle/task task-name
