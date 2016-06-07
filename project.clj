@@ -1,4 +1,4 @@
-(defproject org.onyxplatform/onyx-twitter "0.9.0.1-SNAPSHOT"
+(defproject org.onyxplatform/onyx-twitter "0.9.0.1"
   :description "Onyx plugin for twitter"
   :url "FIX ME"
   :license {:name "Eclipse Public License"
