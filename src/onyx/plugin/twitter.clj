@@ -55,6 +55,10 @@
                                               access-token access-secret)
           twitter-stream (get-twitter-stream configuration)
           twitter-feed-ch (chan 1000)]
+      (assert consumer-key ":twitter/consumer-key not specified")
+      (assert consumer-secret ":twitter/consumer-secret not specified")
+      (assert access-token ":twitter/access-token not specified")
+      (assert access-secret ":twitter/access-secret not specified")
       (add-stream-callback! twitter-stream (fn [m] (>!! twitter-feed-ch m)))
       (assoc this
              :twitter-stream twitter-stream
