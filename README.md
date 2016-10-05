@@ -1,13 +1,13 @@
 ## onyx-twitter
 
-Onyx plugin for twitter.
+Onyx plugin for Twitter.
 
 #### Installation
 
 In your project file:
 
 ```clojure
-[org.onyxplatform/onyx-twitter "0.9.0.2-SNAPSHOT"]
+[org.onyxplatform/onyx-twitter "0.9.11.0"]
 ```
 
 In your peer boot-up namespace:
@@ -34,6 +34,6 @@ Pull requests into the master branch are welcomed.
 
 #### License
 
-Copyright © 2015 FIX ME
+Copyright © 2016 Distributed Masonry
 
 Distributed under the Eclipse Public License, the same as Clojure.
