@@ -1,6 +1,7 @@
 (ns onyx.plugin.twitter
   (:require [clojure.core.async :refer [<!! >!! chan close!]]
             [clojure.java.data :refer [from-java]]
+            [clojure.string :as cstr]
             [onyx.plugin simple-input
              [buffered-reader :as buffered-reader]])
   (:import [twitter4j Status StatusListener TwitterStream TwitterStreamFactory StatusJSONImpl]
@@ -26,9 +27,11 @@
     (onTrackLimitationNotice [numberOfLimitedStatuses]
       (println numberOfLimitedStatuses))))
 
-(defn get-twitter-stream ^TwitterStream [config]
+(defn get-twitter-stream ^TwitterStream [config track]
   (let [factory (TwitterStreamFactory. ^Configuration config)]
-    (.getInstance factory)))
+    (.getInstance factory)
+    (if (not (cstr/blank? track))
+      (.filter track))))
 
 (defn add-stream-callback! [stream cb]
   (let [tc (chan 1000)]
@@ -50,10 +53,11 @@
                   twitter/consumer-secret
                   twitter/access-token
                   twitter/access-secret
-                  twitter/keep-keys]} (:task-map this)
+                  twitter/keep-keys
+                  twitter/track]} (:task-map this)
           configuration (config-with-password consumer-key consumer-secret
                                               access-token access-secret)
-          twitter-stream (get-twitter-stream configuration)
+          twitter-stream (get-twitter-stream configuration track)
           twitter-feed-ch (chan 1000)]
       (assert consumer-key ":twitter/consumer-key not specified")
       (assert consumer-secret ":twitter/consumer-secret not specified")
