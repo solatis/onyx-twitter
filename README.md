@@ -27,6 +27,7 @@ In your peer boot-up namespace:
 | :twitter/access-token        | String              | API key      |
 | :twitter/access-secret       | String              | API key      |
 | :twitter/keep-keys           | [Any]               | Keys to keep in the tweet map after deconstructing the POJO tweet. Defaults to `[:id :lang :text]`. `:all` will keep all the tweet's keys|
+| :twitter/track               | String              | String of words that you to get the Twitter API to filter against.|
 
 #### Contributing
 
