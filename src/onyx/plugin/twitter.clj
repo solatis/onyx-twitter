@@ -3,7 +3,7 @@
             [clojure.java.data :refer [from-java]]
             [onyx.plugin simple-input
              [buffered-reader :as buffered-reader]])
-  (:import [twitter4j Status StatusListener TwitterStream TwitterStreamFactory StatusJSONImpl]
+  (:import [twitter4j Status StatusListener TwitterStream TwitterStreamFactory StatusJSONImpl FilterQuery]
            [twitter4j.conf Configuration ConfigurationBuilder]))
 
 (defn config-with-password ^Configuration [consumer-key consumer-secret
@@ -30,10 +30,12 @@
   (let [factory (TwitterStreamFactory. ^Configuration config)]
     (.getInstance factory)))
 
-(defn add-stream-callback! [stream cb]
+(defn add-stream-callback! [stream cb track]
   (let [tc (chan 1000)]
     (.addListener stream (status-listener cb))
-    (.sample stream)))
+    (if (= 0 (count track))
+      (.sample stream)
+      (.filter stream (FilterQuery. 0 (long-array []) (into-array String track))))))
 
 (defmacro safeget [f obj]
   `(try (~f ~obj) (catch NullPointerException e# nil)))
@@ -50,7 +52,8 @@
                   twitter/consumer-secret
                   twitter/access-token
                   twitter/access-secret
-                  twitter/keep-keys]} (:task-map this)
+                  twitter/keep-keys
+                  twitter/track]} (:task-map this)
           configuration (config-with-password consumer-key consumer-secret
                                               access-token access-secret)
           twitter-stream (get-twitter-stream configuration)
@@ -59,7 +62,7 @@
       (assert consumer-secret ":twitter/consumer-secret not specified")
       (assert access-token ":twitter/access-token not specified")
       (assert access-secret ":twitter/access-secret not specified")
-      (add-stream-callback! twitter-stream (fn [m] (>!! twitter-feed-ch m)))
+      (add-stream-callback! twitter-stream (fn [m] (>!! twitter-feed-ch m)) track)
       (assoc this
              :twitter-stream twitter-stream
              :twitter-feed-ch twitter-feed-ch)))
