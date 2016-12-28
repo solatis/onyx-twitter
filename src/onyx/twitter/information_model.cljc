@@ -25,6 +25,10 @@
       :twitter/keep-keys
       {:doc "Keys to keep in the tweet map after deconstructing the POJO tweet. Defaults to `[:id :lang :text]`. `:all` will keep all the tweet's keys."
        :default [:id :lang :text]
+       :type :vector}
+
+      :twitter/track
+      {:doc "An array of strings that you to get the Twitter API to track."
        :type :vector}}}}
 
    :lifecycle-entry
@@ -39,4 +43,5 @@
      :twitter/consumer-secret
      :twitter/access-token
      :twitter/access-secret
-     :twitter/keep-keys]}})
+     :twitter/keep-keys
+     :twitter/track]}})
