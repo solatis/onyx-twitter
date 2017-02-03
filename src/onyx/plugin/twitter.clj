@@ -37,9 +37,6 @@
       (.sample stream)
       (.filter stream (FilterQuery. 0 (long-array []) (into-array String track))))))
 
-(defmacro safeget [f obj]
-  `(try (~f ~obj) (catch NullPointerException e# nil)))
-
 (defn tweetobj->map [^StatusJSONImpl tweet-obj]
   (try (from-java tweet-obj)
        (catch Exception e
@@ -67,7 +64,9 @@
              :twitter-stream twitter-stream
              :twitter-feed-ch twitter-feed-ch)))
 
-  (stop [this event] 
+  (stop [this event]
+    (.cleanUp ^TwitterStream (:twitter-stream this))
+    (close! (:twitter-feed-ch this))
     this)
 
   i/Input
