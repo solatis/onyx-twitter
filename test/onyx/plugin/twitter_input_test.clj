@@ -38,4 +38,8 @@
         (validate-enough-peers! test-env job)
         (onyx.api/submit-job peer-config job)
         (println (<!! out))
+        (println (<!! out))
+        (println (<!! out))
+        (println (<!! out))
+        (println (<!! out))
         (is (<!! out))))))

@@ -15,8 +15,7 @@
   ([task-name :- s/Keyword opts]
    {:task {:task-map (merge
                       {:onyx/name task-name
-                       :onyx/plugin :onyx.plugin.buffered-reader/new-buffered-input
-                       :simple-input/build-input :onyx.plugin.twitter/consume-tweets
+                       :onyx/plugin :onyx.plugin.twitter/consume-tweets
                        :onyx/type :input
                        :onyx/max-peers 1
                        :onyx/medium :twitter}
