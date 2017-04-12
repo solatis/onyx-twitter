@@ -1,4 +1,4 @@
-(defproject org.onyxplatform/onyx-twitter "0.10.0.0-alpha2"
+(defproject org.onyxplatform/onyx-twitter "0.10.0.0-beta11"
   :description "Onyx plugin for Twitter"
   :url "https://github.com/onyx-platform/onyx-twitter"
   :license {:name "Eclipse Public License"
