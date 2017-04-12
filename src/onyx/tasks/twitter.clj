@@ -9,6 +9,10 @@
    :twitter/access-secret s/Str
    (s/optional-key :twitter/keep-keys) (s/either s/Keyword [s/Any])
    (s/optional-key :twitter/track) [s/Str]
+   (s/optional-key :follow) [Long]
+   (s/optional-key :filter-level) (s/enum :none :low :medium)
+   (s/optional-key :language) [s/Str]
+   (s/optional-key :locatons) [[Double]]
    (os/restricted-ns :twitter) s/Any})
 
 (s/defn stream

@@ -23,12 +23,28 @@
        :type :string}
 
       :twitter/keep-keys
-      {:doc "Keys to keep in the tweet map after deconstructing the POJO tweet. Defaults to `[:id :lang :text]`. `:all` will keep all the tweet's keys."
+      {:doc "Keys to keep in the tweet map after deconstructing the tweet. Defaults to `[:id :lang :text]`. `:all` will keep all the tweet's keys."
        :default [:id :lang :text]
        :type :vector}
 
       :twitter/track
       {:doc "An array of strings that you to get the Twitter API to track."
+       :type :vector}
+
+      :twitter/follow
+      {:doc "An array of users ids that you to get the Twitter API to track."
+       :type :vector}
+
+      :twitter/filter-level
+      {:doc "Filter level to pass to Twitter Streaming API."
+       :type :keyword}
+
+      :twitter/language
+      {:doc "languages to pass to Twitter Streaming API."
+       :type :vecrot}
+
+      :twitter/locations
+      {:doc "An array of coordinates to pass to Twitter Streaming API."
        :type :vector}}}}
 
    :lifecycle-entry
@@ -44,4 +60,8 @@
      :twitter/access-token
      :twitter/access-secret
      :twitter/keep-keys
-     :twitter/track]}})
+     :twitter/track
+     :twitter/follow
+     :twitter/filter-level
+     :twitter/language
+     :twitter/locations]}})
