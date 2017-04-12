@@ -1,13 +1,17 @@
 (ns onyx.plugin.twitter
-  (:require [clojure.core.async :refer [<!! >!! chan close!]]
+  (:require [clojure.core.async :refer [<!! >!! chan close! poll!]]
+            [clojure.tools.logging :as log]
+            [onyx.plugin.protocols.plugin :as p]
+            [onyx.plugin.protocols.input :as i]
             [clojure.java.data :refer [from-java]]
-            [onyx.plugin simple-input
-             [buffered-reader :as buffered-reader]])
-  (:import [twitter4j Status StatusListener TwitterStream TwitterStreamFactory StatusJSONImpl FilterQuery]
+            [cheshire.core :as json])
+  (:import [twitter4j Status RawStreamListener TwitterStream
+            TwitterStreamFactory StatusJSONImpl FilterQuery]
            [twitter4j.conf Configuration ConfigurationBuilder]))
 
-(defn config-with-password ^Configuration [consumer-key consumer-secret
-                                           access-token access-secret]
+(defn config-with-password ^Configuration
+  [consumer-key consumer-secret
+   access-token access-secret]
   "Build a twitter4j configuration object with a username/password pair"
   (.build (doto  (ConfigurationBuilder.)
             (.setOAuthConsumerKey consumer-key)
@@ -15,45 +19,59 @@
             (.setOAuthAccessToken access-token)
             (.setOAuthAccessTokenSecret access-secret))))
 
-(defn status-listener [cb]
-  "Implementation of twitter4j's StatusListener interface"
-  (proxy [StatusListener] []
-    (onStatus [^twitter4j.Status status]
-      (cb status))
-    (onException [^java.lang.Exception e] (.printStackTrace e))
-    (onDeletionNotice [^twitter4j.StatusDeletionNotice statusDeletionNotice])
-    (onScrubGeo [userId upToStatusId] ())
-    (onTrackLimitationNotice [numberOfLimitedStatuses]
-      (println numberOfLimitedStatuses))))
+(defn raw-stream-listener
+  [on-message on-error]
+  (reify RawStreamListener
+    (onMessage [this raw-message]
+      (some-> raw-message (json/parse-string true) on-message))
+    (onException [this e]
+      (on-error e))))
 
-(defn get-twitter-stream ^TwitterStream [config]
-  (let [factory (TwitterStreamFactory. ^Configuration config)]
-    (.getInstance factory)))
+(defn ^TwitterStream get-twitter-stream [config]
+  (-> (TwitterStreamFactory. ^Configuration config) .getInstance))
 
-(defn add-stream-callback! [stream cb track]
-  (let [tc (chan 1000)]
-    (.addListener stream (status-listener cb))
-    (if (= 0 (count track))
-      (.sample stream)
-      (.filter stream (FilterQuery. 0 (long-array []) (into-array String track))))))
 
-(defmacro safeget [f obj]
-  `(try (~f ~obj) (catch NullPointerException e# nil)))
+(defn set-stream-filters!
+  [^TwitterStream stream track follow language locations filter-level]
+  (doto stream
+    (.filter (cond-> (FilterQuery.)
+               (seq follow)
+               (.follow (into-array Long/TYPE (map long follow)))
 
-(defn tweetobj->map [^StatusJSONImpl tweet-obj]
-  (try (from-java tweet-obj)
-       (catch Exception e
-         {:error e})))
+               (seq track)
+               (.track (into-array java.lang.String track))
 
-(defrecord ConsumeTweets [event task-map segment]
-  onyx.plugin.simple-input/SimpleInput
-  (start [this]
+               (some? filter-level)
+               (.filterLevel filter-level)
+
+               (seq language)
+               (.language (into-array java.lang.String language))
+
+               (seq locations)
+               (.locations (into-array (map double-array locations)))))))
+
+(defn add-listener! [^TwitterStream stream
+                     on-message
+                     on-error]
+  (doto stream
+    (.addListener (raw-stream-listener on-message on-error))))
+
+(defrecord ConsumeTweets [event task-map segment
+                          ;; locals
+                          twitter-feed-ch
+                          ^TwitterStream stream]
+  p/Plugin
+  (start [this event]
     (let [{:keys [twitter/consumer-key
                   twitter/consumer-secret
                   twitter/access-token
                   twitter/access-secret
                   twitter/keep-keys
-                  twitter/track]} (:task-map this)
+                  twitter/track
+                  twitter/follow
+                  twitter/language
+                  twitter/filter-level
+                  twitter/locations]} (:task-map this)
           configuration (config-with-password consumer-key consumer-secret
                                               access-token access-secret)
           twitter-stream (get-twitter-stream configuration)
@@ -62,45 +80,45 @@
       (assert consumer-secret ":twitter/consumer-secret not specified")
       (assert access-token ":twitter/access-token not specified")
       (assert access-secret ":twitter/access-secret not specified")
-      (add-stream-callback! twitter-stream (fn [m] (>!! twitter-feed-ch m)) track)
+      (add-listener! twitter-stream
+                     (fn [m] (>!! twitter-feed-ch m))
+                     #(log/error "Unhandled t4j RawStreamListener Handler error - " %))
+      (set-stream-filters! twitter-stream
+                           track follow language filter-level locations)
       (assoc this
              :twitter-stream twitter-stream
              :twitter-feed-ch twitter-feed-ch)))
-  (stop [{:keys [twitter-stream twitter-feed-ch]}]
-    (do (close! twitter-feed-ch)
-        (.shutdown ^TwitterStream twitter-stream)
-        (.cleanUp  ^TwitterStream twitter-stream)))
-  (checkpoint [this]
-    -1)
-  (segment-id[this]
-    -1)
-  (segment [this]
-    segment)
-  (next-state [{:keys [twitter-feed-ch task-map] :as this}]
-    (let [keep-keys (get task-map :twitter/keep-keys)]
-      (assoc this :segment (if (= :all keep-keys)
-                             (tweetobj->map (<!! twitter-feed-ch))
-                             (select-keys
-                              (tweetobj->map (<!! twitter-feed-ch))
-                              (or keep-keys [:id :text :lang]))))))
-  (recover [this offset]
+  (stop [this event]
+    (.cleanUp ^TwitterStream (:twitter-stream this))
+    (close! (:twitter-feed-ch this))
     this)
-  (checkpoint-ack [this offset]
+
+  i/Input
+  (checkpoint [this])
+
+  (recover! [this replica-version checkpoint]
     this)
-  (segment-complete! [this segment]))
+
+  (synced? [this epoch]
+    true)
+
+  (checkpointed! [this epoch])
+
+  (poll! [this _]
+    (let [keep-keys (get task-map :twitter/keep-keys)
+          tweet (poll! twitter-feed-ch)]
+      (when tweet
+        (if (= :all keep-keys)
+          tweet
+          (select-keys tweet
+                       (or keep-keys [:id :text :lang]))))))
+
+  (completed? [this]
+    false))
 
 (defn consume-tweets [{:keys [onyx.core/task-map] :as event}]
   (map->ConsumeTweets {:event event
                        :task-map task-map}))
 
 (def twitter-reader-calls
-  {:lifecycle/before-task-start (fn [event lifecycle]
-                                  (let [plugin (get-in event [:onyx.core/task-map :onyx/plugin])]
-                                    (case plugin
-                                      :onyx.plugin.buffered-reader/new-buffered-input
-                                      (buffered-reader/inject-buffered-reader event lifecycle))))
-   :lifecycle/after-task-stop (fn [event lifecycle]
-                                (let [plugin (get-in event [:onyx.core/task-map :onyx/plugin])]
-                                  (case plugin
-                                    :onyx.plugin.buffered-reader/new-buffered-input
-                                    (buffered-reader/close-buffered-reader event lifecycle))))})
+  {})
