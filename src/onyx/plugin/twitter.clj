@@ -1,8 +1,7 @@
 (ns onyx.plugin.twitter
   (:require [clojure.core.async :refer [<!! >!! chan close! poll!]]
             [clojure.tools.logging :as log]
-            [onyx.plugin.protocols.plugin :as p]
-            [onyx.plugin.protocols.input :as i]
+            [onyx.plugin.protocols :as p]
             [clojure.java.data :refer [from-java]]
             [cheshire.core :as json])
   (:import [twitter4j Status RawStreamListener TwitterStream
@@ -50,7 +49,7 @@
                (seq locations)
                (.locations (into-array (map double-array locations)))))))
 
-(defn add-listener! [^TwitterStream stream
+(defn add-listener! [stream
                      on-message
                      on-error]
   (doto stream
@@ -93,28 +92,29 @@
     (close! (:twitter-feed-ch this))
     this)
 
-  i/Input
-  (checkpoint [this])
+  p/BarrierSynchronization
+  (synced? [this epoch]
+    true)
+
+  (completed? [this]
+    false)
+
+  p/Checkpointed
+  (checkpoint [this]
+    this)
 
   (recover! [this replica-version checkpoint]
     this)
 
-  (synced? [this epoch]
-    true)
-
-  (checkpointed! [this epoch])
-
-  (poll! [this _]
+  p/Input
+  (poll! [this segment _]
     (let [keep-keys (get task-map :twitter/keep-keys)
           tweet (poll! twitter-feed-ch)]
       (when tweet
         (if (= :all keep-keys)
           tweet
           (select-keys tweet
-                       (or keep-keys [:id :text :lang]))))))
-
-  (completed? [this]
-    false))
+                       (or keep-keys [:id :text :lang])))))))
 
 (defn consume-tweets [{:keys [onyx.core/task-map] :as event}]
   (map->ConsumeTweets {:event event
