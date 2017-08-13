@@ -50,7 +50,7 @@
                (seq locations)
                (.locations (into-array (map double-array locations)))))))
 
-(defn add-listener! [^TwitterStream stream
+(defn add-listener! [stream
                      on-message
                      on-error]
   (doto stream
