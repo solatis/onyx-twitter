@@ -100,11 +100,11 @@
     false)
 
   p/Checkpointed
-  (checkpoint [this]
-    this)
+  (checkpoint [this])
 
-  (recover! [this replica-version checkpoint]
-    this)
+  (recover! [this replica-version checkpoint])
+
+  (checkpointed! [this epoch])
 
   p/Input
   (poll! [this segment _]
