@@ -16,7 +16,7 @@
                  [org.twitter4j/twitter4j-core "4.0.4"]
                  [org.twitter4j/twitter4j-stream "4.0.4"]
                  [org.clojure/java.data "0.1.1"]
-                 [cheshire "5.7.0"]]
+                 [cheshire "5.8.0"]]
   :profiles {:dev {:dependencies [[aero "1.0.0-beta2"]]
                    :plugins [[lein-set-version "0.4.1"]
                              [lein-update-dependency "0.1.2"]
