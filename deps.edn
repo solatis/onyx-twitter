@@ -1,0 +1,9 @@
+{:paths ["src" "test"]
+
+ :deps
+ {org.clojure/clojure {:mvn/version "1.8.0"}
+  org.onyxplatform/onyx {:mvn/version "0.12.7"}
+  org.twitter4j/twitter4j-core {:mvn/version "4.0.4"}
+  org.twitter4j/twitter4j-stream {:mvn/version "4.0.4"}
+  org.clojure/java.data {:mvn/version "0.1.1"}
+  cheshire {:mvn/version "5.8.0"}}}
